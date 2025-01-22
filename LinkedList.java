@@ -160,12 +160,12 @@ public class LinkedList {
 	 * @return the index of the block, or -1 if the block is not in this list
 	 */
 	public int indexOf(MemoryBlock block) {
-		if (size == 0){
+		if (size == 0 || block == null){
 			return -1;
 		}
 
+		Node currentNode = first;
 		for (int i = 0; i < size; i++) {
-			Node currentNode = first;
 			if (currentNode.block.equals(block)){
 				return i;
 			}
@@ -182,25 +182,7 @@ public class LinkedList {
 	 *        the node that will be removed from this list
 	 */
 	public void remove(Node node) {
-		if (size == 0){
-			return;
-		}
-
-		int index = indexOf(node.block);
-
-		if (index == -1){
-			return;
-		}
-		
-		if (index == 0){
-			first = first.next;
-			size--;
-			return;
-		}
-
-		// since index is not 0, we are confident there is a previos node
-		Node prevNode = getNode(index - 1);
-		prevNode.next = node.next;
+		this.remove(node.block);
 	}
 
 	/**
@@ -211,7 +193,26 @@ public class LinkedList {
 	 *         if index is negative or greater than or equal to size
 	 */
 	public void remove(int index) {
-		remove(getNode(index));
+		if (size == 0){
+			return;
+		}
+		
+		if (index == 0) {
+			first = first.next;
+			if (size == 1) {
+				last = null;
+			}
+			size--;
+			return;
+		}
+
+		// since index is not 0, we are confident there is a previos node
+		Node prevNode = getNode(index - 1);
+		prevNode.next = prevNode.next.next;
+		if (index == size - 1) {
+			last = prevNode;
+		}
+		size--;
 	}
 
 	/**
@@ -222,7 +223,14 @@ public class LinkedList {
 	 *         if the given memory block is not in this list
 	 */
 	public void remove(MemoryBlock block) {
-		remove(indexOf(block));
+		int index = indexOf(block);
+	
+		if (index == -1){
+			throw new IllegalArgumentException(
+				"index must be between 0 and size");
+		}
+		
+		this.remove(index);
 	}	
 
 	/**
