@@ -244,11 +244,15 @@ public class LinkedList {
 	 * A textual representation of this list, for debugging.
 	 */
 	public String toString() {
-		ListIterator li = iterator();
-		String ans = "";
-		while (li.hasNext()){
-			ans += li.next();
+		String result = "";
+    	Node current = first;
+    	for(int i = 0 ; i < size ; i ++) {
+        	result += current.block.toString() + " "; 
+        	current = current.next; 
 		}
-		return ans;
-	}
+    	return result;
+    }
 }
+
+
+

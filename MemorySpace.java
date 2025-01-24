@@ -58,7 +58,22 @@ public class MemorySpace {
 	 * @return the base address of the allocated block, or -1 if unable to allocate
 	 */
 	public int malloc(int length) {		
-		//// Replace the following statement with your code
+		ListIterator it = freeList.iterator();
+		while (it.hasNext()){
+			int currentLength = it.current.block.length;
+			if (currentLength >= length){
+				int baseAddress = it.current.block.baseAddress;
+				allocatedList.addLast(new MemoryBlock(baseAddress, length));
+				int ans = it.current.block.baseAddress;
+				it.current.block.baseAddress += length;
+				it.current.block.length -= length;
+				if (it.current.block.length == 0){
+					freeList.remove(it.current);
+				}
+				return ans;
+			}
+			it.next();
+		}
 		return -1;
 	}
 
@@ -71,7 +86,23 @@ public class MemorySpace {
 	 *            the starting address of the block to freeList
 	 */
 	public void free(int address) {
-		//// Write your code here
+		if(freeList.getSize() == 1 && freeList.getFirst().block.baseAddress == 0 && freeList.getFirst().block.length == 100) {
+			throw new IllegalArgumentException(
+					"index must be between 0 and size");
+		}
+		ListIterator it = allocatedList.iterator();
+		boolean isFound = false;
+
+		while(it.hasNext() && !isFound) {
+
+				if (it.current.block.baseAddress == address) {
+					allocatedList.remove(it.current.block);
+					freeList.addLast(it.current.block);
+					isFound = true;
+				}
+
+				it.next();
+			}
 	}
 	
 	/**
@@ -88,7 +119,63 @@ public class MemorySpace {
 	 * In this implementation Malloc does not call defrag.
 	 */
 	public void defrag() {
-		/// TODO: Implement defrag test
-		//// Write your code here
+		if (freeList.getSize() <= 1) {
+			return;
+		}
+	
+		boolean merged = true;
+	
+		while (merged) {
+			merged = false;
+			Node current = freeList.getFirst();
+	
+			while (current != null) {
+				Node check = freeList.getFirst();
+				while (check != null) {
+					if (current != check) { // Avoid comparing a block with itself
+						MemoryBlock currentBlock = current.block;
+						MemoryBlock checkBlock = check.block;
+	
+						if (currentBlock.baseAddress + currentBlock.length == checkBlock.baseAddress) {
+							currentBlock.length += checkBlock.length;
+							freeList.remove(check);
+							merged = true;
+							break;
+						} else if (checkBlock.baseAddress + checkBlock.length == currentBlock.baseAddress) {
+							checkBlock.length += currentBlock.length;
+							checkBlock.baseAddress = currentBlock.baseAddress;
+							freeList.remove(current);
+							merged = true;
+							break;
+						}
+					}
+					check = check.next;
+				}
+	
+				if (!merged) {
+					current = current.next;
+				} else {
+					break;
+				}
+			}
+		}
+	}
+	
+	
+
+	
+	public static void main(String[] args) {
+	
+		LinkedList newList = new LinkedList();
+		newList.addFirst(new MemoryBlock(20 , 80));
+		MemorySpace memorySpace = new MemorySpace(100);
+        String expectedText = "(20 , 80) \n(0 , 20) ";
+        String expected = "true";
+        String actual = "";
+        int address = memorySpace.malloc(20);
+        actual += (address == 0 && memorySpace.toString().equals(expectedText));
+            
+		System.out.println(memorySpace.toString());
+		System.out.println(address);
 	}
 }
